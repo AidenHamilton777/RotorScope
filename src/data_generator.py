@@ -1,3 +1,7 @@
+# ============================================================
+# 1. LIBRARY IMPORTS AND TIME CONFIGURATION
+# ============================================================
+
 #Imports Relevant Libraries.
 import numpy as np
 import pandas as pd
@@ -7,6 +11,12 @@ from zoneinfo import ZoneInfo
 
 #Sets timezone.
 start_time = datetime.now(ZoneInfo("America/Toronto"))
+
+
+# ============================================================
+# 2. SENSOR DATA GENERATION
+# ============================================================
+
 
 #Creates dictionary with generated values for simulating using the numpy library and datetime library.
 data = {
@@ -20,6 +30,12 @@ data = {
 #Puts the dictionary "data" into a table using the pandas library (df = Data Frame).
 df = pd.DataFrame(data)
 
+
+# ============================================================
+# 3. ANOMALY LABEL GENERATION
+# ============================================================
+
+
 #Creates a Boolean column identifying the rows containing simulated temperature anomalies.
 df["Temperature Anomaly"] = False
 df.loc[200:209, "Temperature Anomaly"] = True
@@ -28,14 +44,34 @@ df.loc[200:209, "Temperature Anomaly"] = True
 df["Vibration Anomaly"] = False
 df.loc[500:509, "Vibration Anomaly"] = True
 
+# Creates a Boolean column identifying the rows containing simulated rotational speed anomalies.
+df["Rotational Speed Anomaly"] = False
+#df.loc[500:509, "Rotational Speed Anomaly"] = True
+
+# Creates a Boolean column identifying the rows containing simulated power consumption anomalies.
+df["Power Consumption Anomaly"] = False
+#df.loc[500:509, "Power Consumption Anomaly"] = True
+
 #Creates column for any known anomaly. Is a boolean column that evaluates to true if any other column has an anomaly.
 df["Known Anomaly"] = (
-    df["Temperature Anomaly"] | df["Vibration Anomaly"]
+    df["Temperature Anomaly"] | df["Vibration Anomaly"] | df["Rotational Speed Anomaly"] | df["Power Consumption Anomaly"]
 )
+
+
+# ============================================================
+# 4. ANOMALOUS SENSOR VALUE INJECTION
+# ============================================================
+
 
 #Plants random values higher than the average in specific rows of the data to simulate anomalies
 df.loc[200:209, "Temperature"] = np.random.uniform(90, 100, 10)
 df.loc[500:509, "Vibration"] = np.random.uniform(5, 7, 10)
+
+
+# ============================================================
+# 5. DATA EXPORT
+# ============================================================
+
 
 #Saves the data frame as a csv file called sensor_data.csv in a folder called data 
 df.to_csv("data/sensor_data.csv", index=False)

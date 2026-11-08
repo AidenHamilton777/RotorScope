@@ -1,6 +1,12 @@
+# ============================================================
+# 1. DATA LOADING AND PREPARATION
+# ============================================================
+
 #Imports Libraries
 import pandas as pd
 import matplotlib.pyplot as plt
+
+#Data Loading and Prep
 
 #Turns sensor_data csv file into a table in pandas format
 df = pd.read_csv("data/sensor_data.csv")
@@ -8,22 +14,25 @@ df = pd.read_csv("data/sensor_data.csv")
 #Converts the timestamps in df to datetime objects to make comparison easier
 df["Timestamp"] = pd.to_datetime(df["Timestamp"])
 
-#Displays that the information in df to check that it is correct.
-#print(df.head())
-#df.info() # Prints itself and returns none
-#print(df.describe())
 
-#Computes the number of anomalies both as a sum and a percentage of the total.
-anomaly_count = df["Known Anomaly"].sum()
-anomaly_percentage = (anomaly_count / len(df)) * 100
+# ============================================================
+# 2. ANOMALY FILTERING
+# ============================================================
 
-#Prints the previously calculated values
-#print("Number of anomalies: ",  anomaly_count)
-#print("Percentage of anomalous readings:", anomaly_percentage, "%")
 
 #Creates a variable that is true where ever there is an anomaly for its respective category
 temperature_anomalies = df.loc[df["Temperature Anomaly"]]
 vibration_anomalies = df.loc[df["Vibration Anomaly"]]
+rotational_speed_anomaly = df.loc[df["Rotational Speed Anomaly"]]
+power_consumption_anomaly = df.loc[df["Power Consumption Anomaly"]]
+
+
+# ============================================================
+# 3. DATA VISUALIZATION
+# ============================================================
+
+
+# ================ Temperature Visualization =================
 
 #Creates a figure for temperature data to be displayed of size 12in by 5in in width and height respectively
 plt.figure(figsize=(12, 5))
@@ -56,6 +65,8 @@ plt.tight_layout()
 plt.show()
 
 
+# ================ Vibration Visualization =================
+
 #Creates a figure for vibration data to be displayed of size 12in by 5in in width and height respectively
 plt.figure(figsize = (12,5))
 
@@ -87,10 +98,92 @@ plt.tight_layout()
 plt.show()
 
 
-#More value testing
-#print(df.columns)
-#More value testing (Again)
-#print("Temperature anomalies:", df["Temperature Anomaly"].sum())
-#print("Vibration anomalies:", df["Vibration Anomaly"].sum())
-#print("Total anomalies:", df["Known Anomaly"].sum())
+# ================ Rotational Speed Visualization =================
 
+#Creates a figure for vibration data to be displayed of size 12in by 5in in width and height respectively
+plt.figure(figsize = (12,5))
+
+#Sets the data for the main axis
+plt.plot(
+    df["Timestamp"],
+    df["Rotational Speed"],
+    label = "Rotational Speed"
+)
+
+#Sets the data for the scatterplot on the figure
+plt.scatter(
+    rotational_speed_anomaly["Timestamp"],
+    rotational_speed_anomaly["Rotational Speed"],
+    color = "red",
+    label = "Rotational Speed Anomalies"
+)
+
+#Setting up key information to make a graph readable
+plt.title("Industrial Equipment Rotational Speed Over Time")
+plt.xlabel("Timestamp")
+plt.ylabel("Rotational Speed")
+plt.legend()
+plt.grid(True)
+
+#Adjusts the figure to make sure all data fits properly within dimensions
+plt.tight_layout()
+#Displays the figure
+plt.show()
+
+
+# ================ Power Consumption Visualization =================
+
+#Creates a figure for vibration data to be displayed of size 12in by 5in in width and height respectively
+plt.figure(figsize = (12,5))
+
+#Sets the data for the main axis
+plt.plot(
+    df["Timestamp"],
+    df["Power Consumption"],
+    label = "Power Consumption"
+)
+
+#Sets the data for the scatterplot on the figure
+plt.scatter(
+    power_consumption_anomaly["Timestamp"],
+    power_consumption_anomaly["Power Consumption"],
+    color = "red",
+    label = "Power Consumption Anomalies"
+)
+
+#Setting up key information to make a graph readable
+plt.title("Industrial Equipment Power Consumption Over Time")
+plt.xlabel("Timestamp")
+plt.ylabel("Power Consumption")
+plt.legend()
+plt.grid(True)
+
+#Adjusts the figure to make sure all data fits properly within dimensions
+plt.tight_layout()
+#Displays the figure
+plt.show()
+
+
+# ============================================================
+# 4. CORRELATION ANALYSIS
+# ============================================================
+
+
+sensor_data = df[["Temperature", "Vibration", "Rotational Speed", "Power Consumption"]]
+
+correlation_matrix = (sensor_data.corr(method = "pearson"))
+
+plt.imshow(correlation_matrix, cmap = "coolwarm", vmin = -1, vmax = 1)
+
+plt.colorbar()
+plt.xticks(ticks = [0,1,2,3], labels = sensor_data.columns)
+plt.yticks(ticks = [0,1,2,3], labels = sensor_data.columns)
+plt.title("Motor Data Correlation Heatmap")
+
+for row in range(len(correlation_matrix.index)):
+    for col in range(len(correlation_matrix.columns)):
+        plt.text(x = col, y = row, s = round(correlation_matrix.iloc[row, col], 3))
+
+
+plt.tight_layout()
+plt.show()
